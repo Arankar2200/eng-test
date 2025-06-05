@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест по английской грамматике</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1em;
+        }
+
+        .welcome-screen {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .quiz-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .question-counter {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .question {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            color: #2c3e50;
+            text-align: left;
+        }
+
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .answer-btn {
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            padding: 18px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .answer-btn.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .answer-btn.correct {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .answer-btn.incorrect {
+            border-color: #f44336;
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+            animation: incorrectShake 0.6s ease;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .results {
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 20px 0;
+            text-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 20px 0;
+        }
+
+        .level-description {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+            text-align: left;
+        }
+
+        .level-description h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .level-description p {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .emoji {
+            font-size: 4em;
+            margin: 20px 0;
+            animation: bounce 1s infinite;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(76, 175, 80, 0.4);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .feature-list {
+            text-align: left;
+            margin: 30px 0;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @media (max-width: 375px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .question {
+                font-size: 1.1em;
+            }
+            
+            .answer-btn {
+                padding: 15px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Тест по грамматике</h1>
+            <p>Определите свой уровень английского</p>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="welcome-screen">
+            <div class="emoji">📚</div>
+            <h2 style="color: #2c3e50; margin-bottom: 20px; font-size: 1.8em;">Готовы проверить свои знания?</h2>
+            <p style="color: #666; font-size: 1.1em; line-height: 1.5; margin-bottom: 20px;">
+                Пройдите тест из 20 вопросов по английской грамматике и узнайте свой уровень владения языком.
+            </p>
+            
+            <div class="feature-list">
+                <div class="feature">
+                    <div class="feature-icon">20</div>
+                    <span>Вопросов по грамматике</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⏱</div>
+                    <span>Без ограничения времени</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <span>Определение уровня A1-C2</span>
+                </div>
+            </div>
+            
+            <button class="start-btn" onclick="startQuiz()">Начать тест</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="quiz-container hidden">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="question-counter" id="questionCounter">Вопрос 1 из 20</div>
+            
+            <div class="question" id="questionText"></div>
+            
+            <div class="answers" id="answersContainer"></div>
+            
+            <button class="next-btn" id="nextBtn" onclick="nextQuestion()" disabled>Следующий вопрос</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="quiz-container hidden">
+            <div class="results">
+                <div class="emoji" id="resultEmoji"></div>
+                <div class="level-badge" id="levelBadge"></div>
+                <div class="score" id="finalScore"></div>
+                
+                <div class="level-description" id="levelDescription"></div>
+                
+                <button class="restart-btn" onclick="restartQuiz()">Пройти еще раз</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data - 20 grammar questions
+        const quizData = [
+            // A1 Level
+            {
+                question: "Выберите правильную форму глагола 'to be': She ___ a student.",
+                answers: ["am", "is", "are", "be"],
+                correct: 1,
+                level: "A1"
+            },
+            {
+                question: "Какая форма множественного числа у слова 'child'?",
+                answers: ["childs", "children", "childes", "child"],
+                correct: 1,
+                level: "A1"
+            },
+            {
+                question: "Выберите правильный артикль: ___ apple is red.",
+                answers: ["a", "an", "the", "-"],
+                correct: 1,
+                level: "A1"
+            },
+            {
+                question: "Какое время используется в предложении: 'I go to school every day'?",
+                answers: ["Present Simple", "Present Continuous", "Past Simple", "Future Simple"],
+                correct: 0,
+                level: "A1"
+            },
+            
+            // A2 Level
+            {
+                question: "Выберите правильную форму: Yesterday I ___ to the cinema.",
+                answers: ["go", "went", "gone", "going"],
+                correct: 1,
+                level: "A2"
+            },
+            {
+                question: "Какой предлог правильный: I'm interested ___ music.",
+                answers: ["in", "on", "at", "for"],
+                correct: 0,
+                level: "A2"
+            },
+            {
+                question: "Выберите правильное сравнение: This book is ___ than that one.",
+                answers: ["good", "better", "best", "more good"],
+                correct: 1,
+                level: "A2"
+            },
+            {
+                question: "Какая форма правильная: How ___ apples do you have?",
+                answers: ["much", "many", "few", "little"],
+                correct: 1,
+                level: "A2"
+            },
+            
+            // B1 Level
+            {
+                question: "Выберите правильную форму Present Perfect: I ___ this book.",
+                answers: ["have read", "has read", "had read", "will read"],
+                correct: 0,
+                level: "B1"
+            },
+            {
+                question: "Какой модальный глагол выражает обязанность: You ___ do your homework.",
+                answers: ["can", "may", "must", "could"],
+                correct: 2,
+                level: "B1"
+            },
+            {
+                question: "Выберите правильную форму пассивного залога: The letter ___ yesterday.",
+                answers: ["was written", "is written", "will be written", "has been written"],
+                correct: 0,
+                level: "B1"
+            },
+            {
+                question: "Условное предложение первого типа: If it ___, we will stay home.",
+                answers: ["rain", "rains", "will rain", "rained"],
+                correct: 1,
+                level: "B1"
+            },
+            
+            // B2 Level
+            {
+                question: "Выберите правильную форму: I wish I ___ speak Chinese.",
+                answers: ["can", "could", "will", "would"],
+                correct: 1,
+                level: "B2"
+            },
+            {
+                question: "Герундий или инфинитив: I enjoy ___ books.",
+                answers: ["to read", "reading", "read", "reads"],
+                correct: 1,
+                level: "B2"
+            },
+            {
+                question: "Условное предложение третьего типа: If I ___ harder, I would have passed the exam.",
+                answers: ["studied", "had studied", "have studied", "study"],
+                correct: 1,
+                level: "B2"
+            },
+            {
+                question: "Выберите правильную форму: By this time next year, I ___ my degree.",
+                answers: ["will finish", "will have finished", "finish", "have finished"],
+                correct: 1,
+                level: "B2"
+            },
+            
+            // C1 Level
+            {
+                question: "Выберите правильную инверсию: ___ had I arrived when it started raining.",
+                answers: ["Hardly", "Hard", "Hardest", "Harder"],
+                correct: 0,
+                level: "C1"
+            },
+            {
+                question: "Смешанные условные предложения: If you ___ my advice, you wouldn't be in trouble now.",
+                answers: ["took", "had taken", "take", "have taken"],
+                correct: 1,
+                level: "C1"
+            },
+            {
+                question: "Эмфатические конструкции: It was John ___ broke the window.",
+                answers: ["who", "which", "that", "whom"],
+                correct: 0,
+                level: "C1"
+            },
+            
+            // C2 Level
+            {
+                question: "Сложная инверсия: Little ___ that this decision would change everything.",
+                answers: ["did he know", "he knew", "he did know", "knew he"],
+                correct: 0,
+                level: "C2"
+            }
+        ];
+
+        // Level descriptions
+        const levelDescriptions = {
+            "A1": {
+                title: "Beginner (Начинающий)",
+                description: "Вы можете понимать и использовать знакомые повседневные выражения и основные фразы. Можете представиться и представить других, задавать простые вопросы о личных данных.",
+                emoji: "🌱"
+            },
+            "A2": {
+                title: "Elementary (Элементарный)",
+                description: "Вы можете понимать предложения и часто используемые выражения. Можете общаться в простых и привычных ситуациях, требующих простого обмена информацией.",
+                emoji: "🌿"
+            },
+            "B1": {
+                title: "Intermediate (Средний)",
+                description: "Вы можете понимать основные идеи четких сообщений на знакомые темы. Можете справиться с большинством ситуаций во время путешествий в страну изучаемого языка.",
+                emoji: "🌳"
+            },
+            "B2": {
+                title: "Upper-Intermediate (Выше среднего)",
+                description: "Вы можете понимать основные идеи сложных текстов на абстрактные и конкретные темы. Можете общаться с носителями языка с определенной степенью беглости.",
+                emoji: "🎯"
+            },
+            "C1": {
+                title: "Advanced (Продвинутый)",
+                description: "Вы можете понимать широкий спектр длинных и сложных текстов. Можете говорить спонтанно и бегло, не испытывая явных затруднений с подбором слов.",
+                emoji: "🏆"
+            },
+            "C2": {
+                title: "Proficiency (Профессиональный)",
+                description: "Вы можете легко понимать практически все, что слышите или читаете. Можете спонтанно, очень бегло и точно выражаться в сложных ситуациях.",
+                emoji: "👑"
+            }
+        };
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let answered = false;
+
+        // Initialize Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            
+            // Set theme colors
+            if (tg.themeParams) {
+                document.body.style.backgroundColor = tg.themeParams.bg_color || '#667eea';
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const question = quizData[currentQuestion];
+            
+            // Update progress
+            const progress = ((currentQuestion) / quizData.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Update question counter
+            document.getElementById('questionCounter').textContent = 
+                `Вопрос ${currentQuestion + 1} из ${quizData.length}`;
+            
+            // Update question text
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Clear previous answers
+            const answersContainer = document.getElementById('answersContainer');
+            answersContainer.innerHTML = '';
+            
+            // Add answer buttons
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer;
+                button.onclick = () => selectAnswer(index);
+                answersContainer.appendChild(button);
+            });
+            
+            // Reset state
+            selectedAnswer = null;
+            answered = false;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('nextBtn').textContent = 'Следующий вопрос';
+        }
+
+        function selectAnswer(index) {
+            if (answered) return;
+            
+            selectedAnswer = index;
+            const buttons = document.querySelectorAll('.answer-btn');
+            const question = quizData[currentQuestion];
+            
+            // Remove previous selections
+            buttons.forEach(btn => {
+                btn.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Mark selected answer
+            buttons[index].classList.add('selected');
+            
+            // Show correct answer after a delay
+            setTimeout(() => {
+                answered = true;
+                
+                // Show correct answer in green
+                buttons[question.correct].classList.add('correct');
+                
+                // Show incorrect answer in red if wrong
+                if (index !== question.correct) {
+                    buttons[index].classList.remove('selected');
+                    buttons[index].classList.add('incorrect');
+                } else {
+                    score++;
+                }
+                
+                // Enable next button
+                document.getElementById('nextBtn').disabled = false;
+                
+                // Change button text for last question
+                if (currentQuestion === quizData.length - 1) {
+                    document.getElementById('nextBtn').textContent = 'Посмотреть результаты';
+                }
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function determineLevel(score, totalQuestions) {
+            const percentage = (score / totalQuestions) * 100;
+            
+            if (percentage >= 95) return "C2";
+            if (percentage >= 85) return "C1";
+            if (percentage >= 70) return "B2";
+            if (percentage >= 55) return "B1";
+            if (percentage >= 40) return "A2";
+            return "A1";
+        }
+
+        function showResults() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+            
+            const level = determineLevel(score, quizData.length);
+            const percentage = Math.round((score / quizData.length) * 100);
+            const levelInfo = levelDescriptions[level];
+            
+            // Update display
+            document.getElementById('resultEmoji').textContent = levelInfo.emoji;
+            document.getElementById('levelBadge').textContent = level;
+            document.getElementById('finalScore').textContent = `${score} из ${quizData.length} (${percentage}%)`;
+            
+            // Update level description
+            const descriptionDiv = document.getElementById('levelDescription');
+            descriptionDiv.innerHTML = `
+                <h3>${levelInfo.title}</h3>
+                <p>${levelInfo.description}</p>
+            `;
+            
+            // Update progress to 100%
+            document.getElementById('progressFill').style.width = '100%';
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            answered = false;
+            
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+
+        // Add haptic feedback for Telegram
+        function addHapticFeedback() {
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        // Add haptic feedback to buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                addHapticFeedback();
+            }
+        });
+    </script>
+</body>
+</html>
